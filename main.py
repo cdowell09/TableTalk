@@ -1,6 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from typing import Optional, Dict
+from src.api.models import QueryRequest, QueryResponse
 from sqlalchemy import text
 from src.llm.openai_provider import OpenAIProvider
 from src.sql.generator import SQLGenerator
@@ -17,15 +16,6 @@ app = FastAPI(
     description="Natural Language to SQL Query Converter",
     version="1.0.0"
 )
-
-class QueryRequest(BaseModel):
-    query: str
-    context: Optional[Dict] = None
-
-class QueryResponse(BaseModel):
-    success: bool
-    sql: Optional[str] = None
-    error: Optional[str] = None
 
 # Initialize components
 db_connection = DatabaseConnection()
