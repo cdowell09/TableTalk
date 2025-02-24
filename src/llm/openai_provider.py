@@ -6,6 +6,7 @@ from src.core.base import BaseResponse, BaseLLMProvider
 from src.core.llm_provider import LLMConfig
 from src.core.prompts import PromptManager
 from src.utils.logger import get_logger
+from src.utils.config import OPENAI_API_KEY, OPENAI_MODEL
 
 # Get a named logger instance for this module
 logger = get_logger("openai_provider")
@@ -14,8 +15,7 @@ class OpenAIProvider(BaseLLMProvider):
     def __init__(self):
         # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
         # do not change this unless explicitly requested by the user
-        model = os.environ.get("OPENAI_MODEL", "gpt-4o")
-        self.config = LLMConfig(model=model)
+        self.config = LLMConfig(model=OPENAI_MODEL)
         self.client = None
         self.prompt_manager = PromptManager()
 
@@ -24,7 +24,7 @@ class OpenAIProvider(BaseLLMProvider):
         try:
             logger.info("Initializing OpenAI provider...")
             logger.info(f"Using OpenAI model: {self.config.model}")
-            self.client = AsyncOpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+            self.client = AsyncOpenAI(api_key=OPENAI_API_KEY)
             logger.info("OpenAI provider initialized successfully")
         except Exception as e:
             logger.error(f"Failed to initialize OpenAI provider: {e}")

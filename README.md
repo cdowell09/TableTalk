@@ -10,6 +10,7 @@ A modular Text2SQL backend service that leverages OpenAI's GPT models to convert
 - Structured logging with Loguru
 - FastAPI-based REST API
 - Async database operations
+- Environment configuration using python-dotenv
 
 ## Project Structure
 
@@ -28,25 +29,33 @@ src/
 │   ├── validator.py  # SQL validation logic
 │   └── generator.py  # SQL generation utilities
 └── utils/
-    └── logger.py     # Logging configuration
+    ├── logger.py     # Logging configuration
+    └── config.py     # Environment configuration
 ```
 
 ## Setup
 
 1. Clone the repository
+
 2. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
 3. Set up environment variables:
+   - Copy `.env.example` to `.env`
+   - Update the values in `.env` with your configuration:
 ```bash
-# OpenAI API Configuration
-OPENAI_API_KEY=your_api_key_here
-OPENAI_MODEL=gpt-4o  # Optional: Defaults to gpt-4o if not set
+# Create .env file from example
+cp .env.example .env
 
-# Database Configuration
+# Edit .env file with your values
+# Required environment variables:
+OPENAI_API_KEY=your_api_key_here
 DATABASE_URL=postgresql://user:password@host:port/dbname
+
+# Optional environment variables:
+OPENAI_MODEL=gpt-4o  # Defaults to gpt-4o if not set
 ```
 
 4. Start the server:

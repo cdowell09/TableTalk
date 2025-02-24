@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlalchemy import text
 from urllib.parse import urlparse, parse_qs
 from src.utils.logger import get_logger
+from src.utils.config import DATABASE_URL
 
 logger = get_logger(__name__)
 
@@ -15,14 +16,10 @@ class DatabaseConnection:
     async def initialize(self) -> None:
         """Initialize database connection"""
         try:
-            database_url = os.environ.get("DATABASE_URL")
-            if not database_url:
-                raise ValueError("DATABASE_URL environment variable not set")
-
             logger.info("Initializing database connection...")
 
             # Parse the URL to remove sslmode parameter
-            parsed = urlparse(database_url)
+            parsed = urlparse(DATABASE_URL)
             query_params = parse_qs(parsed.query)
             filtered_params = {k: v[0] for k, v in query_params.items() if k != 'sslmode'}
 
