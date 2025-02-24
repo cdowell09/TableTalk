@@ -7,6 +7,7 @@ from src.core.llm_provider import LLMConfig
 from src.core.prompts import PromptManager
 from src.utils.logger import get_logger
 from src.utils.config import OPENAI_API_KEY, OPENAI_MODEL
+from src.db.connection import DatabaseType
 
 # Get a named logger instance for this module
 logger = get_logger("openai_provider")
@@ -40,11 +41,15 @@ class OpenAIProvider(BaseLLMProvider):
             if not self.client:
                 raise ValueError("OpenAI client not initialized")
 
+            # Determine database type from metadata or fall back to PostgreSQL
+            database_type = metadata.get('database_type', DatabaseType.POSTGRESQL.value)
+
             # Prepare variables for the prompt template
             variables = {
                 "query": prompt,
                 "metadata": json.dumps(metadata),
-                "context": "Generate a PostgreSQL query based on the following request."
+                "database_type": database_type,
+                "context": f"Generate a {database_type} query based on the following request."
             }
 
             # Generate the full prompt using the template

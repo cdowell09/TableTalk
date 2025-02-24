@@ -18,9 +18,10 @@ class PromptTemplate:
 # System prompts
 SQL_GENERATION_PROMPT = PromptTemplate(
     template=(
-        "You are an expert SQL generator. Generate PostgreSQL queries based on "
-        "natural language input and database schema metadata. Return only valid SQL "
-        "in a JSON response with a 'sql' key.\n\n"
+        "You are an expert SQL generator. Generate valid SQL queries based on "
+        "natural language input and database schema metadata. The target database "
+        "type is $database_type. Return only valid SQL in a JSON response with a "
+        "'sql' key.\n\n"
         "Additional context: $context\n"
         "Schema metadata: $metadata\n"
         "Query: $query"
