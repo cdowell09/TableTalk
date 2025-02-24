@@ -7,7 +7,7 @@ from src.core.llm_provider import LLMConfig
 from src.core.prompts import PromptManager
 from src.utils.logger import get_logger
 from src.utils.config import OLLAMA_BASE_URL, OLLAMA_MODEL
-from src.db.connection import DatabaseType
+from src.core.db import DatabaseType
 
 logger = get_logger("ollama_provider")
 

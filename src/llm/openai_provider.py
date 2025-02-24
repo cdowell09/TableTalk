@@ -7,7 +7,7 @@ from src.core.llm_provider import LLMConfig
 from src.core.prompts import PromptManager
 from src.utils.logger import get_logger
 from src.utils.config import OPENAI_API_KEY, OPENAI_MODEL
-from src.db.connection import DatabaseType
+from src.core.db import DatabaseType
 
 # Get a named logger instance for this module
 logger = get_logger("openai_provider")
