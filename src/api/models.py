@@ -4,6 +4,7 @@ from typing import Dict, Optional
 class QueryRequest(BaseModel):
     query: str
     context: Optional[Dict] = None
+    prompt_variables: Optional[Dict] = None
 
 class QueryResponse(BaseModel):
     success: bool

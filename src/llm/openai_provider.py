@@ -4,6 +4,7 @@ import json
 from openai import AsyncOpenAI
 from src.core.base import BaseResponse, BaseLLMProvider
 from src.core.llm_provider import LLMConfig
+from src.core.prompts import PromptManager
 from src.utils.logger import get_logger
 
 # Get a named logger instance for this module
@@ -13,6 +14,7 @@ class OpenAIProvider(BaseLLMProvider):
     def __init__(self):
         self.config = LLMConfig(model="gpt-4o")
         self.client = None
+        self.prompt_manager = PromptManager()
 
     async def initialize(self) -> None:
         """Initialize OpenAI client"""
@@ -34,21 +36,24 @@ class OpenAIProvider(BaseLLMProvider):
             if not self.client:
                 raise ValueError("OpenAI client not initialized")
 
-            system_prompt = (
-                "You are an expert SQL generator. Generate PostgreSQL queries based on "
-                "natural language input and database schema metadata. Return only valid SQL "
-                "in a JSON response with a 'sql' key."
-            )
+            # Prepare variables for the prompt template
+            variables = {
+                "query": prompt,
+                "metadata": json.dumps(metadata),
+                "context": "Generate a PostgreSQL query based on the following request."
+            }
 
-            messages = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"Schema metadata: {json.dumps(metadata)}\nQuery: {prompt}"}
-            ]
+            # Generate the full prompt using the template
+            rendered_prompt = self.prompt_manager.render_prompt(
+                "sql_generation", variables
+            )
 
             logger.debug(f"Sending request to OpenAI with prompt: {prompt}")
             response = await self.client.chat.completions.create(
                 model=self.config.model,
-                messages=messages,
+                messages=[
+                    {"role": "user", "content": rendered_prompt}
+                ],
                 temperature=self.config.temperature,
                 max_tokens=self.config.max_tokens,
                 response_format={"type": "json_object"}
