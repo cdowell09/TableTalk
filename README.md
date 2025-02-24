@@ -1,16 +1,23 @@
 # Text2SQL Backend Service
 
-A modular Text2SQL backend service that leverages OpenAI's GPT models to convert natural language queries into valid SQL statements. The service includes dynamic metadata retrieval and advanced logging capabilities.
+A modular Text2SQL backend service that leverages advanced AI models (OpenAI and Ollama) to convert natural language queries into valid SQL statements. The service includes dynamic metadata retrieval, multiple database support, and advanced logging capabilities.
 
 ## Features
 
-- Natural language to SQL conversion using OpenAI GPT models
+- Natural language to SQL conversion using multiple LLM providers:
+  - OpenAI GPT models
+  - Ollama local models
+- Multi-database support:
+  - PostgreSQL
+  - Trino
 - SQL validation and security checks
 - Dynamic database metadata handling
 - Structured logging with Loguru
 - FastAPI-based REST API
 - Async database operations
 - Environment configuration using python-dotenv
+- Code quality enforcement using Ruff
+- Flexible provider abstraction for database and LLM integrations
 
 ## Project Structure
 
@@ -21,10 +28,13 @@ src/
 │   └── routes.py     # API endpoints
 ├── core/             # Core functionality and protocols
 │   ├── base.py       # Base classes and protocols
-│   └── llm_provider.py # LLM provider interface
+│   └── provider.py   # Provider interfaces (DB & LLM)
 ├── db/               # Database related code
-├── llm/
-│   └── openai_provider.py # OpenAI implementation
+│   ├── postgres_db.py # PostgreSQL implementation
+│   └── trino_db.py   # Trino implementation
+├── llm/              # LLM providers
+│   ├── openai_provider.py  # OpenAI implementation
+│   └── ollama_provider.py  # Ollama implementation
 ├── sql/
 │   ├── validator.py  # SQL validation logic
 │   └── generator.py  # SQL generation utilities
@@ -53,9 +63,13 @@ cp .env.example .env
 # Required environment variables:
 OPENAI_API_KEY=your_api_key_here
 DATABASE_URL=postgresql://user:password@host:port/dbname
+# Or for Trino:
+# DATABASE_URL=trino://user@host:port/catalog/schema
 
 # Optional environment variables:
-OPENAI_MODEL=gpt-4o  # Defaults to gpt-4o if not set
+OPENAI_MODEL=gpt-4  # Defaults to gpt-4 if not set
+OLLAMA_BASE_URL=http://localhost:11434  # For local Ollama setup
+OLLAMA_MODEL=llama2  # Specify Ollama model to use
 ```
 
 4. Start the server:
@@ -93,10 +107,17 @@ Response:
 
 ## Key Components
 
-### LLM Provider
-- Handles communication with OpenAI's API
-- Configurable model selection and parameters via environment variables
+### LLM Providers
+- Multiple provider support (OpenAI, Ollama)
+- Configurable model selection and parameters
 - Structured error handling
+- Provider abstraction for easy integration of new LLMs
+
+### Database Support
+- Multiple database engine support
+- PostgreSQL for traditional relational databases
+- Trino for data warehouse queries
+- Abstract provider interface for adding new engines
 
 ### SQL Validator
 - Prevents dangerous operations (DROP, DELETE, etc.)
@@ -110,20 +131,31 @@ Response:
 
 ## Development Guidelines
 
-1. **Logging**
+1. **Code Quality**
+   - Use Ruff for code formatting and linting
+   - Follow PEP 8 style guidelines
+   - Maintain consistent code formatting
+
+2. **Logging**
    - Use the provided logger from `src/utils/logger.py`
    - Include appropriate log levels (DEBUG, INFO, WARNING, ERROR)
    - Add context when logging errors
 
-2. **Error Handling**
+3. **Error Handling**
    - Use the BaseResponse class for consistent error responses
    - Include detailed error messages for debugging
    - Handle both API and processing errors gracefully
 
-3. **Database Operations**
+4. **Database Operations**
    - Use async database operations
    - Validate metadata before generating SQL
    - Follow SQL injection prevention best practices
+   - Use appropriate database provider for the use case
+
+5. **Provider Implementation**
+   - Follow the provider interfaces in `core/provider.py`
+   - Implement required methods and error handling
+   - Add comprehensive tests for new providers
 
 ## Contributing
 
