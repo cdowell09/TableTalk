@@ -43,6 +43,7 @@ pip install -r requirements.txt
 ```bash
 # OpenAI API Configuration
 OPENAI_API_KEY=your_api_key_here
+OPENAI_MODEL=gpt-4o  # Optional: Defaults to gpt-4o if not set
 
 # Database Configuration
 DATABASE_URL=postgresql://user:password@host:port/dbname
@@ -85,7 +86,7 @@ Response:
 
 ### LLM Provider
 - Handles communication with OpenAI's API
-- Configurable model selection and parameters
+- Configurable model selection and parameters via environment variables
 - Structured error handling
 
 ### SQL Validator
