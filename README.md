@@ -48,13 +48,15 @@ src/
 1. Clone the repository
 
 2. Install dependencies:
+
 ```bash
-pip install -r requirements.txt
+uv sync
 ```
 
-3. Set up environment variables:
+1. Set up environment variables:
    - Copy `.env.example` to `.env`
    - Update the values in `.env` with your configuration:
+
 ```bash
 # Create .env file from example
 cp .env.example .env
