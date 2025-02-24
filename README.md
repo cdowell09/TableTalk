@@ -22,25 +22,31 @@ A modular Text2SQL backend service that leverages advanced AI models (OpenAI and
 ## Project Structure
 
 ```
-src/
-├── api/               # API routes and models
-│   ├── models.py     # Pydantic models for request/response
-│   └── routes.py     # API endpoints
-├── core/             # Core functionality and protocols
-│   ├── base.py       # Base classes and protocols
-│   └── provider.py   # Provider interfaces (DB & LLM)
-├── db/               # Database related code
-│   ├── postgres_db.py # PostgreSQL implementation
-│   └── trino_db.py   # Trino implementation
-├── llm/              # LLM providers
-│   ├── openai_provider.py  # OpenAI implementation
-│   └── ollama_provider.py  # Ollama implementation
-├── sql/
-│   ├── validator.py  # SQL validation logic
-│   └── generator.py  # SQL generation utilities
-└── utils/
-    ├── logger.py     # Logging configuration
-    └── config.py     # Environment configuration
+├── src/
+│   ├── api/               # API routes and models
+│   │   ├── models.py      # Pydantic models for request/response
+│   │   └── routes.py      # API endpoint definitions
+│   ├── core/             # Core functionality and base classes
+│   │   ├── base.py       # Base classes and response types
+│   │   ├── prompts.py    # Prompt template management
+│   │   ├── db.py         # Database interface definitions
+│   │   └── llm_provider.py # LLM provider interface
+│   ├── db/               # Database implementations
+│   │   ├── connection.py # Database connection management
+│   │   ├── metadata.py   # Schema metadata handling
+│   │   ├── postgres_db.py # PostgreSQL implementation
+│   │   └── trino_db.py   # Trino implementation
+│   ├── llm/              # LLM providers
+│   │   ├── openai_provider.py  # OpenAI implementation
+│   │   └── ollama_provider.py  # Ollama implementation
+│   ├── sql/              # SQL handling
+│   │   ├── generator.py  # SQL generation utilities
+│   │   └── validator.py  # SQL validation logic
+│   └── utils/            # Utility modules
+│       ├── config.py     # Environment configuration
+│       └── logger.py     # Logging setup
+├── main.py              # FastAPI application entry point
+├── pyproject.toml       # Project dependencies and tools configuration
 ```
 
 ## Setup
