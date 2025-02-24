@@ -1,10 +1,6 @@
-import uvicorn
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from src.api.routes import router, db_connection
-from src.utils.logger import get_logger
-
-logger = get_logger(__name__)
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from typing import Optional, Dict
 
 app = FastAPI(
     title="Text2SQL API",
@@ -12,40 +8,30 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+class QueryRequest(BaseModel):
+    query: str
+    context: Optional[Dict] = None
 
-@app.on_event("startup")
-async def startup():
+class QueryResponse(BaseModel):
+    success: bool
+    sql: Optional[str] = None
+    error: Optional[str] = None
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
+
+@app.post("/api/query", response_model=QueryResponse)
+async def process_query(request: QueryRequest):
     try:
-        await db_connection.initialize()
-        logger.info("Database connection initialized")
+        # For now, return a simple response
+        return QueryResponse(
+            success=True,
+            sql="SELECT * FROM example_table"
+        )
     except Exception as e:
-        logger.error(f"Failed to initialize database: {e}")
-        raise
-
-@app.on_event("shutdown")
-async def shutdown():
-    try:
-        await db_connection.shutdown()
-        logger.info("Database connection closed")
-    except Exception as e:
-        logger.error(f"Error during shutdown: {e}")
-
-# Register routes
-app.include_router(router, prefix="/api")
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
-    uvicorn.run(
-        app,
-        host="0.0.0.0",
-        port=5000,
-        reload=True,
-        log_level="debug"
-    )
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=5000)
