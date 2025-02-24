@@ -1,19 +1,28 @@
 import sqlparse
-from typing import Dict, Tuple
+
 from src.core.base import BaseResponse
 from src.utils.logger import get_logger
 
 # Get a named logger instance for this module
 logger = get_logger("sql_validator")
 
+
 class SQLValidator:
     def __init__(self):
         self.dangerous_keywords = {
-            "DROP", "DELETE", "TRUNCATE", "ALTER", "GRANT",
-            "REVOKE", "EXECUTE", "EXEC", "COMMIT", "ROLLBACK"
+            "DROP",
+            "DELETE",
+            "TRUNCATE",
+            "ALTER",
+            "GRANT",
+            "REVOKE",
+            "EXECUTE",
+            "EXEC",
+            "COMMIT",
+            "ROLLBACK",
         }
 
-    async def validate_sql(self, sql: str, metadata: Dict) -> BaseResponse:
+    async def validate_sql(self, sql: str, metadata: dict) -> BaseResponse:
         """Validate generated SQL query"""
         try:
             logger.debug(f"Validating SQL query: {sql}")
@@ -28,8 +37,7 @@ class SQLValidator:
             if self._contains_dangerous_operations(parsed[0]):
                 logger.warning("SQL contains dangerous operations")
                 return BaseResponse(
-                    success=False,
-                    error="SQL contains potentially dangerous operations"
+                    success=False, error="SQL contains potentially dangerous operations"
                 )
 
             # Validate against metadata
@@ -45,7 +53,9 @@ class SQLValidator:
             logger.error(f"SQL validation error: {e}")
             return BaseResponse(success=False, error=str(e))
 
-    def _contains_dangerous_operations(self, parsed_sql: sqlparse.sql.Statement) -> bool:
+    def _contains_dangerous_operations(
+        self, parsed_sql: sqlparse.sql.Statement
+    ) -> bool:
         """Check for dangerous SQL operations"""
         tokens = parsed_sql.flatten()
         dangerous_ops = [
@@ -61,10 +71,8 @@ class SQLValidator:
         return bool(dangerous_ops)
 
     def _validate_tables(
-        self,
-        parsed_sql: sqlparse.sql.Statement,
-        metadata: Dict
-    ) -> Tuple[bool, str]:
+        self, parsed_sql: sqlparse.sql.Statement, metadata: dict
+    ) -> tuple[bool, str]:
         """Validate table names against metadata"""
         tables = set(metadata.keys())
         sql_tables = set()

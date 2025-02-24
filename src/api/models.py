@@ -1,15 +1,17 @@
 from pydantic import BaseModel
-from typing import Dict, Optional
+
 
 class QueryRequest(BaseModel):
     query: str
-    context: Optional[Dict] = None
-    prompt_variables: Optional[Dict] = None
+    context: dict | None = None
+    prompt_variables: dict | None = None
+
 
 class QueryResponse(BaseModel):
     success: bool
-    sql: Optional[str] = None
-    error: Optional[str] = None
+    sql: str | None = None
+    error: str | None = None
+
 
 class ErrorResponse(BaseModel):
     success: bool = False

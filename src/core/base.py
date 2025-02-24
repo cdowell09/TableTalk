@@ -1,11 +1,14 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Optional
+
 
 class BaseResponse:
-    def __init__(self, success: bool, data: Optional[Dict] = None, error: Optional[str] = None):
+    def __init__(
+        self, success: bool, data: dict | None = None, error: str | None = None
+    ):
         self.success = success
         self.data = data or {}
         self.error = error
+
 
 class BaseProvider(ABC):
     @abstractmethod
@@ -18,8 +21,9 @@ class BaseProvider(ABC):
         """Cleanup provider resources"""
         pass
 
+
 class BaseLLMProvider(BaseProvider):
     @abstractmethod
-    async def generate_sql(self, prompt: str, metadata: Dict) -> BaseResponse:
+    async def generate_sql(self, prompt: str, metadata: dict) -> BaseResponse:
         """Generate SQL from natural language"""
         pass

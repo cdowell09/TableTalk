@@ -1,11 +1,12 @@
 from fastapi import FastAPI, HTTPException
-from src.api.models import QueryRequest, QueryResponse
 from sqlalchemy import text
+
+from src.api.models import QueryRequest, QueryResponse
+from src.db.connection import DatabaseConnection
+from src.db.metadata import MetadataManager
 from src.llm.openai_provider import OpenAIProvider
 from src.sql.generator import SQLGenerator
 from src.sql.validator import SQLValidator
-from src.db.connection import DatabaseConnection
-from src.db.metadata import MetadataManager
 from src.utils.logger import get_logger
 
 # Configure logger
@@ -14,7 +15,7 @@ logger = get_logger(__name__)
 app = FastAPI(
     title="Text2SQL API",
     description="Natural Language to SQL Query Converter",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 # Initialize components
@@ -22,6 +23,7 @@ db_connection = DatabaseConnection()
 llm_provider = OpenAIProvider()
 sql_generator = SQLGenerator(llm_provider)
 sql_validator = SQLValidator()
+
 
 @app.on_event("startup")
 async def startup_event():
@@ -33,7 +35,8 @@ async def startup_event():
         logger.info("LLM provider initialized")
     except Exception as e:
         logger.error(f"Startup failed: {str(e)}")
-        raise
+        raise RuntimeError("Failed to initialize application") from e
+
 
 @app.on_event("shutdown")
 async def shutdown_event():
@@ -43,7 +46,8 @@ async def shutdown_event():
         await llm_provider.shutdown()
     except Exception as e:
         logger.error(f"Shutdown error: {str(e)}")
-        raise
+        raise RuntimeError("Failed to shutdown application") from e
+
 
 @app.get("/health")
 async def health_check():
@@ -56,9 +60,9 @@ async def health_check():
     except Exception as e:
         logger.error(f"Health check failed: {str(e)}")
         raise HTTPException(
-            status_code=500,
-            detail=f"Health check failed: {str(e)}"
-        )
+            status_code=500, detail=f"Health check failed: {str(e)}"
+        ) from e
+
 
 @app.post("/api/query", response_model=QueryResponse)
 async def process_query(request: QueryRequest):
@@ -74,9 +78,7 @@ async def process_query(request: QueryRequest):
 
         # Generate SQL
         generation_result = await sql_generator.generate_sql(
-            query=request.query,
-            metadata=metadata,
-            context=request.context
+            query=request.query, metadata=metadata, context=request.context
         )
 
         if not generation_result.success:
@@ -85,8 +87,7 @@ async def process_query(request: QueryRequest):
 
         # Validate SQL
         validation_result = await sql_validator.validate_sql(
-            sql=generation_result.data["sql"],
-            metadata=metadata
+            sql=generation_result.data["sql"], metadata=metadata
         )
 
         if not validation_result.success:
@@ -94,15 +95,14 @@ async def process_query(request: QueryRequest):
             return QueryResponse(success=False, error=validation_result.error)
 
         logger.info(f"Successfully generated SQL: {generation_result.data['sql']}")
-        return QueryResponse(
-            success=True,
-            sql=generation_result.data["sql"]
-        )
+        return QueryResponse(success=True, sql=generation_result.data["sql"])
 
     except Exception as e:
         logger.error(f"Error processing query: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=5000, log_level="debug")

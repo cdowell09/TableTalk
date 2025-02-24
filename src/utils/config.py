@@ -1,11 +1,13 @@
 import os
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 # Load environment variables from .env file if it exists
-dotenv_path = Path('.env')
+dotenv_path = Path(".env")
 if dotenv_path.exists():
     load_dotenv(dotenv_path)
+
 
 def get_env_variable(key: str, default: str | None = None) -> str:
     """
@@ -15,6 +17,7 @@ def get_env_variable(key: str, default: str | None = None) -> str:
     if value is None:
         raise ValueError(f"Environment variable {key} is not set")
     return value
+
 
 # OpenAI Configuration
 OPENAI_API_KEY = get_env_variable("OPENAI_API_KEY")

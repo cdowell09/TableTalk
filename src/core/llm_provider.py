@@ -1,10 +1,13 @@
-from typing import Dict, Optional, Protocol
+from typing import Protocol
+
 from src.core.base import BaseResponse
 
+
 class LLMProvider(Protocol):
-    async def generate_sql(self, prompt: str, metadata: Dict) -> BaseResponse:
+    async def generate_sql(self, prompt: str, metadata: dict) -> BaseResponse:
         """Protocol for LLM providers"""
         pass
+
 
 class LLMConfig:
     def __init__(

@@ -1,5 +1,5 @@
 """Module for managing prompt templates and rendering."""
-from typing import Dict, Optional
+
 from string import Template
 
 
@@ -7,12 +7,12 @@ class PromptTemplate:
     def __init__(self, template: str):
         self.template = Template(template)
 
-    def render(self, variables: Optional[Dict] = None) -> str:
+    def render(self, variables: dict | None = None) -> str:
         """Render the template with provided variables."""
         try:
             return self.template.safe_substitute(variables or {})
         except KeyError as e:
-            raise ValueError(f"Missing required variable in template: {e}")
+            raise ValueError(f"Missing required variable in template: {e}") from e
 
 
 # System prompts
@@ -35,7 +35,7 @@ DEFAULT_PROMPTS = {
 
 
 class PromptManager:
-    def __init__(self, custom_prompts: Optional[Dict[str, PromptTemplate]] = None):
+    def __init__(self, custom_prompts: dict[str, PromptTemplate] | None = None):
         """Initialize with default prompts and optional custom prompts."""
         self.prompts = DEFAULT_PROMPTS.copy()
         if custom_prompts:
@@ -51,7 +51,7 @@ class PromptManager:
         """Add a new prompt template."""
         self.prompts[name] = PromptTemplate(template)
 
-    def render_prompt(self, prompt_name: str, variables: Optional[Dict] = None) -> str:
+    def render_prompt(self, prompt_name: str, variables: dict | None = None) -> str:
         """Render a prompt template with provided variables."""
         template = self.get_prompt(prompt_name)
         return template.render(variables)

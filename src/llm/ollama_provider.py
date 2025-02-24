@@ -1,15 +1,17 @@
-import os
 import json
+from http import HTTPStatus
+
 import aiohttp
-from typing import Dict
-from src.core.base import BaseResponse, BaseLLMProvider
+
+from src.core.base import BaseLLMProvider, BaseResponse
+from src.core.db import DatabaseType
 from src.core.llm_provider import LLMConfig
 from src.core.prompts import PromptManager
-from src.utils.logger import get_logger
 from src.utils.config import OLLAMA_BASE_URL, OLLAMA_MODEL
-from src.core.db import DatabaseType
+from src.utils.logger import get_logger
 
 logger = get_logger("ollama_provider")
+
 
 class OllamaProvider(BaseLLMProvider):
     def __init__(self):
@@ -27,12 +29,12 @@ class OllamaProvider(BaseLLMProvider):
             self.session = aiohttp.ClientSession()
             # Test connection
             async with self.session.get(f"{self.base_url}/api/version") as response:
-                if response.status != 200:
+                if response.status != HTTPStatus.OK:
                     raise ConnectionError("Failed to connect to Ollama service")
             logger.info("Ollama provider initialized successfully")
         except Exception as e:
             logger.error(f"Failed to initialize Ollama provider: {e}")
-            raise
+            raise RuntimeError("Failed to initialize Ollama provider") from e
 
     async def shutdown(self) -> None:
         """Cleanup resources"""
@@ -41,20 +43,22 @@ class OllamaProvider(BaseLLMProvider):
             await self.session.close()
         self.session = None
 
-    async def generate_sql(self, prompt: str, metadata: Dict) -> BaseResponse:
+    async def generate_sql(self, prompt: str, metadata: dict) -> BaseResponse:
         try:
             if not self.session:
                 raise ValueError("Ollama client not initialized")
 
             # Determine database type from metadata or fall back to PostgreSQL
-            database_type = metadata.get('database_type', DatabaseType.POSTGRESQL.value)
+            database_type = metadata.get("database_type", DatabaseType.POSTGRESQL.value)
 
             # Prepare variables for the prompt template
             variables = {
                 "query": prompt,
                 "metadata": json.dumps(metadata),
                 "database_type": database_type,
-                "context": f"Generate a {database_type} query based on the following request."
+                "context": (
+                    f"Generate a {database_type} query based on the following request."
+                ),
             }
 
             # Generate the full prompt using the template
@@ -73,11 +77,11 @@ class OllamaProvider(BaseLLMProvider):
                     "stream": False,
                     "options": {
                         "temperature": self.config.temperature,
-                    }
-                }
+                    },
+                },
             ) as response:
-                if response.status != 200:
-                    raise Exception(f"Ollama API error: {response.status}")
+                if response.status != HTTPStatus.OK:
+                    raise RuntimeError(f"Ollama API error: {response.status}") from None
 
                 result = await response.json()
                 response_text = result.get("response", "")
@@ -92,7 +96,8 @@ class OllamaProvider(BaseLLMProvider):
                         json_str = response_text[start_idx:end_idx]
                         parsed_json = json.loads(json_str)
                         sql = parsed_json.get("sql")
-                except json.JSONDecodeError:
+                except json.JSONDecodeError as e:
+                    logger.warning(f"Failed to parse JSON response: {e}")
                     pass
 
                 # If JSON parsing failed or no SQL found, use the raw response

@@ -1,17 +1,21 @@
-from typing import Dict, List, Optional
 import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncEngine
-from functools import lru_cache
-from sqlalchemy import inspect
+
+# Using a module-level cache dictionary instead of method-level lru_cache
+_metadata_cache = {}
+
 
 class MetadataManager:
     def __init__(self, engine: AsyncEngine):
         self.engine = engine
         self._metadata = sa.MetaData()
 
-    @lru_cache(maxsize=100)
-    async def get_table_metadata(self, table_names: Optional[List[str]] = None) -> Dict:
+    async def get_table_metadata(self, table_names: list[str] | None = None) -> dict:
         """Retrieve and cache table metadata"""
+        cache_key = tuple(sorted(table_names)) if table_names else None
+        if cache_key in _metadata_cache:
+            return _metadata_cache[cache_key]
+
         try:
             async with self.engine.connect() as conn:
                 await conn.run_sync(self._metadata.reflect)
@@ -27,7 +31,7 @@ class MetadataManager:
                             "type": str(column.type),
                             "nullable": column.nullable,
                             "primary_key": column.primary_key,
-                            "foreign_key": bool(column.foreign_keys)
+                            "foreign_key": bool(column.foreign_keys),
                         }
 
                     metadata[table_name] = {
@@ -38,18 +42,20 @@ class MetadataManager:
                                 "column": fk.parent.name,
                                 "references": {
                                     "table": fk.column.table.name,
-                                    "column": fk.column.name
-                                }
+                                    "column": fk.column.name,
+                                },
                             }
                             for fk in table.foreign_keys
-                        ]
+                        ],
                     }
 
+                # Cache the result
+                _metadata_cache[cache_key] = metadata
                 return metadata
 
         except Exception as e:
-            raise Exception(f"Failed to retrieve metadata: {str(e)}")
+            raise Exception(f"Failed to retrieve metadata: {str(e)}") from e
 
     def invalidate_cache(self):
         """Clear the metadata cache"""
-        self.get_table_metadata.cache_clear()
+        _metadata_cache.clear()

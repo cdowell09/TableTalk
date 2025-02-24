@@ -1,19 +1,25 @@
-from typing import Dict, List, Any, Optional
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy.ext.asyncio import AsyncEngine
+from typing import Any
+from urllib.parse import parse_qs, urlparse
+
 from sqlalchemy import text
-from urllib.parse import urlparse, parse_qs
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
 from src.core.db import DatabaseInterface
 from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
+
 class PostgreSQLDatabase(DatabaseInterface):
     def __init__(self, connection_url: str):
         self.connection_url = connection_url
-        self._engine: Optional[AsyncEngine] = None
-        self._async_session: Optional[async_sessionmaker[AsyncSession]] = None
+        self._engine: AsyncEngine | None = None
+        self._async_session: async_sessionmaker[AsyncSession] | None = None
         self._connected = False
 
     async def initialize(self) -> None:
@@ -21,16 +27,22 @@ class PostgreSQLDatabase(DatabaseInterface):
             # Parse and filter query parameters
             parsed = urlparse(self.connection_url)
             query_params = parse_qs(parsed.query)
-            filtered_params = {k: v[0] for k, v in query_params.items() if k != 'sslmode'}
+            filtered_params = {
+                k: v[0] for k, v in query_params.items() if k != "sslmode"
+            }
 
             # Reconstruct the URL
             cleaned_url = f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
             if filtered_params:
-                cleaned_url += '?' + '&'.join(f'{k}={v}' for k, v in filtered_params.items())
+                cleaned_url += "?" + "&".join(
+                    f"{k}={v}" for k, v in filtered_params.items()
+                )
 
             # Convert to async format if needed
             if cleaned_url.startswith("postgresql://"):
-                cleaned_url = cleaned_url.replace("postgresql://", "postgresql+asyncpg://")
+                cleaned_url = cleaned_url.replace(
+                    "postgresql://", "postgresql+asyncpg://"
+                )
                 logger.info("Converted database URL to async format")
 
             logger.info("Creating async PostgreSQL engine...")
@@ -40,13 +52,11 @@ class PostgreSQLDatabase(DatabaseInterface):
                 max_overflow=10,
                 pool_timeout=30,
                 pool_recycle=1800,
-                echo=False
+                echo=False,
             )
 
             self._async_session = async_sessionmaker(
-                self._engine,
-                class_=AsyncSession,
-                expire_on_commit=False
+                self._engine, class_=AsyncSession, expire_on_commit=False
             )
 
             await self.test_connection()
@@ -69,10 +79,10 @@ class PostgreSQLDatabase(DatabaseInterface):
             logger.error(f"Error during PostgreSQL shutdown: {str(e)}")
             raise
 
-    async def execute_query(self, query: str) -> List[Dict[str, Any]]:
+    async def execute_query(self, query: str) -> list[dict[str, Any]]:
         if not self._engine:
             raise ValueError("Database not initialized")
-        
+
         async with self._engine.connect() as conn:
             result = await conn.execute(text(query))
             return [dict(row) for row in result]

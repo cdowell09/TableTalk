@@ -1,12 +1,14 @@
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Any
 from enum import Enum
-from src.core.base import BaseResponse
+from typing import Any
+
 
 class DatabaseType(Enum):
     """Supported database types"""
+
     POSTGRESQL = "postgresql"
     TRINO = "trino"
+
 
 class DatabaseInterface(ABC):
     """Abstract base class for database connections"""
@@ -22,7 +24,7 @@ class DatabaseInterface(ABC):
         pass
 
     @abstractmethod
-    async def execute_query(self, query: str) -> List[Dict[str, Any]]:
+    async def execute_query(self, query: str) -> list[dict[str, Any]]:
         """Execute a query and return results"""
         pass
 

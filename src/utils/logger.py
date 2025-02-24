@@ -1,12 +1,13 @@
 import sys
+
 from loguru import logger
-from typing import Optional, Union, Dict
+
 
 def setup_logger(
-    name: Optional[str] = None,
-    level: Union[str, int] = "DEBUG",
-    format_string: Optional[str] = None,
-    **kwargs: Dict
+    name: str | None = None,
+    level: str | int = "DEBUG",
+    format_string: str | None = None,
+    **kwargs: dict,
 ) -> logger:
     """Configure and return a logger instance with custom settings"""
     # Remove default handler
@@ -23,17 +24,14 @@ def setup_logger(
 
     # Add a new handler with custom format
     logger.add(
-        sink=sys.stderr,
-        format=format_string,
-        level=level,
-        enqueue=True,
-        **kwargs
+        sink=sys.stderr, format=format_string, level=level, enqueue=True, **kwargs
     )
 
     if name:
         return logger.bind(name=name)
     return logger
 
-def get_logger(name: Optional[str] = None) -> logger:
+
+def get_logger(name: str | None = None) -> logger:
     """Get a configured logger instance"""
     return setup_logger(name=name)

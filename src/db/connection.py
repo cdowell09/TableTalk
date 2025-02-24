@@ -1,18 +1,17 @@
-import os
-from typing import Optional
 from urllib.parse import urlparse
 
 from src.core.db import DatabaseInterface
 from src.db.postgres_db import PostgreSQLDatabase
 from src.db.trino_db import TrinoDatabase
-from src.utils.logger import get_logger
 from src.utils.config import DATABASE_URL
+from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
+
 class DatabaseConnection:
     def __init__(self):
-        self._db: Optional[DatabaseInterface] = None
+        self._db: DatabaseInterface | None = None
 
     async def initialize(self) -> None:
         """Initialize database connection"""
@@ -60,7 +59,7 @@ class DatabaseConnection:
 
         if isinstance(self._db, PostgreSQLDatabase):
             return self._db.engine
-        elif isinstance(self._db, TrinoDatabase):
+        if isinstance(self._db, TrinoDatabase):
             return self._db.connection
 
         raise ValueError(f"Unsupported database type: {type(self._db)}")
