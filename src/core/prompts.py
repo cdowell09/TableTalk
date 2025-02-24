@@ -20,11 +20,11 @@ SQL_GENERATION_PROMPT = PromptTemplate(
     template=(
         "You are an expert SQL generator. Generate valid SQL queries based on "
         "natural language input and database schema metadata. The target database "
-        "type is $database_type. Return only valid SQL in a JSON response with a "
-        "'sql' key.\n\n"
+        "type is $database_type.\n\n"
         "Additional context: $context\n"
         "Schema metadata: $metadata\n"
-        "Query: $query"
+        "Query: $query\n\n"
+        "Return only valid SQL in a JSON response with a 'sql' key."
     )
 )
 
