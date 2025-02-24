@@ -22,4 +22,5 @@ dependencies = [
     "loguru>=0.7.3",
     "python-dotenv>=1.0.1",
     "aiohttp>=3.11.12",
+    "trino>=0.333.0",
 ]
