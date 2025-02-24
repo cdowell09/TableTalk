@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from src.api.models import QueryRequest, QueryResponse
 from src.db.connection import DatabaseConnection
 from src.db.metadata import MetadataManager
+from src.llm.openai_provider import OpenAIProvider
 from src.sql.generator import SQLGenerator
 from src.sql.validator import SQLValidator
 from src.utils.logger import get_logger
@@ -23,8 +24,6 @@ async def get_metadata_manager():
 
 async def get_llm_provider():
     """Dependency for LLM provider"""
-    from src.llm.openai_provider import OpenAIProvider
-
     return OpenAIProvider()
 
 
