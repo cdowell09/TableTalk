@@ -97,6 +97,59 @@ curl -X POST http://localhost:5000/api/query \
   }'
 ```
 
+#### Understanding the Context Payload
+
+The `context` field is a required parameter that provides the LLM with necessary information about your database schema. This context helps the model generate accurate and valid SQL queries.
+
+Structure:
+```json
+{
+  "context": {
+    "table_name": {
+      "columns": ["column1", "column2", ...],
+      "relationships": [
+        {
+          "referenced_table": "other_table",
+          "type": "many_to_one",
+          "foreign_key": "other_table_id"
+        }
+      ]
+    }
+  }
+}
+```
+
+Key components:
+- `table_name`: The name of each table in your schema
+- `columns`: Array of column names in the table
+- `relationships`: (Optional) Array of relationships with other tables
+  - `referenced_table`: The name of the related table
+  - `type`: Relationship type ("one_to_many", "many_to_one", "one_to_one")
+  - `foreign_key`: The column name that serves as the foreign key
+
+Example with relationships:
+```json
+{
+  "query": "Show me all orders with their customer details",
+  "context": {
+    "orders": {
+      "columns": ["id", "total_amount", "customer_id", "created_at"],
+      "relationships": [
+        {
+          "referenced_table": "customers",
+          "type": "many_to_one",
+          "foreign_key": "customer_id"
+        }
+      ]
+    },
+    "customers": {
+      "columns": ["id", "name", "email"],
+      "relationships": []
+    }
+  }
+}
+```
+
 Response:
 ```json
 {
@@ -104,6 +157,8 @@ Response:
   "sql": "SELECT * FROM users WHERE created_at >= date_trunc('month', current_date - interval '1 month') AND created_at < date_trunc('month', current_date)"
 }
 ```
+
+Note: The context payload is required for all queries as it helps the LLM understand your database structure and generate appropriate SQL. Without it, the service cannot guarantee accurate SQL generation.
 
 ## Key Components
 
