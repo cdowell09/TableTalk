@@ -1,6 +1,7 @@
 import os
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.ext.asyncio import AsyncEngine
+from sqlalchemy import text
 from urllib.parse import urlparse, parse_qs
 from src.utils.logger import get_logger
 
@@ -51,9 +52,9 @@ class DatabaseConnection:
                 expire_on_commit=False
             )
 
-            # Test the connection
+            # Test the connection using SQLAlchemy text()
             async with self.engine.connect() as conn:
-                await conn.execute("SELECT 1")
+                await conn.execute(text("SELECT 1"))
                 logger.info("Database connection test successful")
 
         except Exception as e:

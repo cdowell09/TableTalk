@@ -1,17 +1,19 @@
-import logging
+from loguru import logger
 from typing import Optional
 
-def get_logger(name: Optional[str] = None) -> logging.Logger:
+def get_logger(name: Optional[str] = None) -> logger:
     """Configure and return a logger instance"""
-    logger = logging.getLogger(name or __name__)
-    
-    if not logger.handlers:
-        handler = logging.StreamHandler()
-        formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-        )
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-        logger.setLevel(logging.INFO)
+    # Remove default handler
+    logger.remove()
 
+    # Add a new handler with custom format
+    logger.add(
+        sink=lambda msg: print(msg),
+        format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+        level="DEBUG",
+        enqueue=True
+    )
+
+    if name:
+        return logger.bind(name=name)
     return logger
