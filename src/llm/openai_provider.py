@@ -6,11 +6,11 @@ from src.core.base import BaseResponse, BaseLLMProvider
 from src.core.llm_provider import LLMConfig
 from src.utils.logger import get_logger
 
-logger = get_logger(__name__)
+# Get a named logger instance for this module
+logger = get_logger("openai_provider")
 
 class OpenAIProvider(BaseLLMProvider):
     def __init__(self):
-        # the newest OpenAI model is "gpt-4o" which was released May 13, 2024
         self.config = LLMConfig(model="gpt-4o")
         self.client = None
 
@@ -21,7 +21,7 @@ class OpenAIProvider(BaseLLMProvider):
             self.client = AsyncOpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
             logger.info("OpenAI provider initialized successfully")
         except Exception as e:
-            logger.error(f"Failed to initialize OpenAI provider: {str(e)}")
+            logger.error(f"Failed to initialize OpenAI provider: {e}")
             raise
 
     async def shutdown(self) -> None:
@@ -55,9 +55,10 @@ class OpenAIProvider(BaseLLMProvider):
             )
 
             sql = json.loads(response.choices[0].message.content)["sql"]
-            logger.info(f"Successfully generated SQL: {sql}")
+            logger.info("Successfully generated SQL query")
+            logger.debug(f"Generated SQL: {sql}")
             return BaseResponse(success=True, data={"sql": sql})
 
         except Exception as e:
-            logger.error(f"Failed to generate SQL: {str(e)}")
+            logger.error(f"Failed to generate SQL: {e}")
             return BaseResponse(success=False, error=str(e))
