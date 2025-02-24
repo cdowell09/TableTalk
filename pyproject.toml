@@ -21,4 +21,5 @@ dependencies = [
     "oauthlib>=3.2.2",
     "loguru>=0.7.3",
     "python-dotenv>=1.0.1",
+    "aiohttp>=3.11.12",
 ]
